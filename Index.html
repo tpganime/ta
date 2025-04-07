@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Fusion Hub - Login</title>
+  <!-- Google Font -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link 
+    href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" 
+    rel="stylesheet">
+  <style>
+    /* Global Reset */
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Roboto', sans-serif;
+      background: linear-gradient(135deg, #fda085, #f6d365);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      position: relative;
+      overflow: hidden;
+    }
+    /* Decorative Corner Shapes */
+    .shape-top {
+      position: absolute;
+      top: 0;
+      right: 0;
+      width: 180px;
+      height: 180px;
+      background: #fda085;
+      border-bottom-left-radius: 100%;
+      z-index: 1;
+    }
+    .shape-bottom {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 250px;
+      height: 250px;
+      background: #f6d365;
+      border-top-right-radius: 100%;
+      z-index: 1;
+    }
+    /* Login Container */
+    .login-container {
+      position: relative;
+      z-index: 2;
+      width: 90%;
+      max-width: 360px;
+      background: #fff;
+      border-radius: 20px;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+      padding: 2rem;
+      text-align: center;
+    }
+    .page-title {
+      font-size: 1.5rem;
+      font-weight: 700;
+      margin-bottom: 1rem;
+      color: #333;
+    }
+    .subtitle {
+      font-size: 0.95rem;
+      color: #999;
+      margin-bottom: 2rem;
+    }
+    .form-group {
+      margin-bottom: 1rem;
+      text-align: left;
+    }
+    label { display: block; margin-bottom: 0.3rem; font-weight: 500; color: #555; }
+    input {
+      width: 100%;
+      padding: 0.8rem;
+      margin-bottom: 0.5rem;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      font-size: 1rem;
+      outline: none;
+    }
+    .login-btn {
+      width: 100%;
+      padding: 0.8rem;
+      background: #3498db;
+      border: none;
+      border-radius: 6px;
+      font-size: 1rem;
+      font-weight: 700;
+      color: #fff;
+      cursor: pointer;
+      margin-top: 1rem;
+      transition: background 0.3s ease;
+    }
+    .login-btn:hover { background: #2980b9; }
+  </style>
+</head>
+<body>
+  <div class="shape-top"></div>
+  <div class="shape-bottom"></div>
+  <div class="login-container">
+    <div class="page-title">Fusion Hub</div>
+    <div class="subtitle">Login to your account</div>
+    <form id="login-form">
+      <div class="form-group">
+        <label for="email">Email</label>
+        <input type="email" id="email" placeholder="user@example.com" required>
+      </div>
+      <div class="form-group">
+        <label for="password">Password</label>
+        <input type="password" id="password" placeholder="••••••••" required>
+      </div>
+      <button type="submit" class="login-btn">Login</button>
+    </form>
+  </div>
+  <script>
+    // Utility functions for cookies.
+    function setCookie(name, value, days) {
+      const date = new Date();
+      date.setTime(date.getTime() + (days*24*60*60*1000));
+      const expires = "expires=" + date.toUTCString();
+      document.cookie = name + "=" + value + ";" + expires + ";path=/; Secure; SameSite=Lax";
+    }
+    function getCookie(name) {
+      const cname = name + "=";
+      const decodedCookie = decodeURIComponent(document.cookie);
+      const ca = decodedCookie.split(';');
+      for (let c of ca) {
+        c = c.trim();
+        if (c.indexOf(cname) === 0) return c.substring(cname.length, c.length);
+      }
+      return "";
+    }
+    // On load, if fusionHubUser cookie exists, redirect to home.html.
+    window.addEventListener("load", function() {
+      if(getCookie("fusionHubUser")) {
+        window.location.href = "home.html";
+      }
+    });
+    document.getElementById("login-form").addEventListener("submit", function(e) {
+      e.preventDefault();
+      const email = document.getElementById("email").value;
+      const password = document.getElementById("password").value;
+      if(email && password) {
+        // Check if admin login: (email: tanmay@gmail.com, password: Tanmayts123)
+        let userData;
+        if(email.toLowerCase() === "tanmay@gmail.com" && password === "Tanmayts123") {
+          userData = {
+            email: email,
+            password: password,
+            username: "TANMAY (OWNER)",
+            name: "TANMAY (OWNER)",
+            bio: "Owner and Admin of Fusion Hub",
+            profilePic: "https://picsum.photos/seed/tanmay/300/300", // Replace with admin pic URL
+            admin: true,
+            posts: 100,
+            followers: 5000,
+            following: 10
+          };
+        } else {
+          // For other users, use entered credentials. (In production, verify on server.)
+          userData = { email: email, password: password };
+        }
+        const userDataString = JSON.stringify(userData);
+        // Store credentials in cookie (demo only)
+        setCookie("fusionHubUser", userDataString, 365);
+        localStorage.setItem("myUser", userDataString);
+        window.location.href = "home.html";
+      }
+    });
+  </script>
+</body>
+</html>

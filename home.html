@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Fusion Hub - Home</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Roboto', sans-serif;
+      background: linear-gradient(135deg, #fda085, #f6d365);
+      margin: 0;
+      padding: 0;
+      color: #333;
+    }
+    .navbar {
+      background: #fff;
+      padding: 1rem;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+    }
+    .nav-item {
+      text-decoration: none;
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: #3498db;
+      transition: color 0.3s ease;
+    }
+    .nav-item:hover {
+      color: #2980b9;
+    }
+    .container {
+      padding: 2rem;
+      text-align: center;
+    }
+    h1 {
+      font-size: 2rem;
+      margin-bottom: 1rem;
+    }
+    p {
+      font-size: 1.1rem;
+      margin-bottom: 2rem;
+    }
+    /* Grid for Fusion Hub items */
+    .app-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 20px;
+      max-width: 800px;
+      margin: 0 auto;
+    }
+    .app-item {
+      background: rgba(255, 255, 255, 0.9);
+      border-radius: 12px;
+      padding: 15px;
+      text-align: center;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      cursor: pointer;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    .app-item:hover {
+      transform: scale(1.05);
+      box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+    }
+    .app-item img {
+      width: 55px;
+      height: 55px;
+      margin-bottom: 8px;
+    }
+    .app-item span {
+      font-size: 0.9rem;
+      font-weight: 700;
+      color: #333;
+    }
+  </style>
+</head>
+<body>
+  <div class="navbar">
+    <a href="home.html" class="nav-item">Home</a>
+    <a href="profile.html" class="nav-item">Profile</a>
+    <a href="index.html" class="nav-item" id="logout">Logout</a>
+  </div>
+  <div class="container">
+    <h1>Welcome to Fusion Hub!</h1>
+    <p> Welcome users </p>
+    <div class="app-grid">
+      <!-- Fusion Hub Items -->
+      <div class="app-item" onclick="window.location.href='https://chaudharytanmay10.github.io/tanmay-s-/'">
+        <img src="logo.png" alt="Code Editor">
+        <span>Code Editor</span>
+      </div>
+      <div class="app-item" onclick="window.location.href='https://chat.openai.com/'">
+        <img src="gpt.png" alt="ChatGPT">
+        <span>ChatGPT</span>
+      </div>
+      <div class="app-item" onclick="window.location.href='https://m.soundcloud.com/'">
+        <img src="music.png" alt="Music">
+        <span>Music</span>
+      </div>
+      <div class="app-item" onclick="window.location.href='https://www.crazygames.com/'">
+        <img src="games.jpg" alt="Games">
+        <span>Games</span>
+      </div>
+      <div class="app-item" onclick="window.location.href='https://vegamovies.td/'">
+        <img src="vm.jpg" alt="Download Movies">
+        <span>Download Movies</span>
+      </div>
+      <div class="app-item" onclick="window.location.href='https://9anime.org.lv/'">
+        <img src="Anime.jpg" alt="Anime">
+        <span>Anime</span>
+      </div>
+    </div>
+  </div>
+  <script>
+    // Check login: if cookie missing, redirect to login.
+    function getCookie(name) {
+      const cname = name + "=";
+      const decodedCookie = decodeURIComponent(document.cookie);
+      const ca = decodedCookie.split(';');
+      for (let c of ca) {
+        c = c.trim();
+        if (c.indexOf(cname) === 0) return c.substring(cname.length, c.length);
+      }
+      return "";
+    }
+    if(!getCookie("fusionHubUser")) { window.location.href = "index.html"; }
+    // Logout functionality: clear cookie and localStorage.
+    document.getElementById("logout").addEventListener("click", function(e){
+      e.preventDefault();
+      document.cookie = "fusionHubUser=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; Secure; SameSite=Lax";
+      localStorage.removeItem("myUser");
+      window.location.href = "index.html";
+    });
+  </script>
+</body>
+</html>

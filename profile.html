@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Fusion Hub - Profile</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link 
+    href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" 
+    rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Roboto', sans-serif;
+      background: linear-gradient(135deg, #fda085, #f6d365);
+      margin: 0;
+      padding: 0;
+      color: #333;
+    }
+    .navbar {
+      background: #fff;
+      padding: 1rem;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+    }
+    .nav-item {
+      text-decoration: none;
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: #3498db;
+      transition: color 0.3s ease;
+    }
+    .nav-item:hover { color: #2980b9; }
+    .profile-container {
+      background: #fff;
+      width: 95%;
+      max-width: 500px;
+      margin: 2rem auto;
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+    }
+    .profile-header {
+      background: linear-gradient(135deg, #fda085, #f6d365);
+      padding: 2rem 1.5rem 4rem 1.5rem;
+      position: relative;
+      text-align: center;
+      border-bottom-left-radius: 60% 15%;
+      border-bottom-right-radius: 60% 15%;
+    }
+    .profile-pic {
+      width: 120px;
+      height: 120px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 3px solid #fff;
+      position: absolute;
+      left: 50%;
+      transform: translateX(-50%) translateY(45%);
+    }
+    .profile-info {
+      margin-top: 70px;
+      text-align: center;
+      padding: 0 1.5rem 1rem;
+    }
+    .profile-info h2 {
+      font-size: 1.8rem;
+      font-weight: 700;
+      margin-bottom: 0.3rem;
+    }
+    .profile-info p {
+      font-size: 1rem;
+      color: #666;
+      margin-bottom: 1rem;
+    }
+    .stats-row {
+      display: flex;
+      justify-content: space-around;
+      margin: 1rem 0;
+      border-top: 1px solid #eee;
+      border-bottom: 1px solid #eee;
+      padding: 0.8rem 0;
+    }
+    .stat-box { text-align: center; }
+    .stat-box h3 {
+      font-size: 1.2rem;
+      font-weight: 700;
+      margin-bottom: 0.2rem;
+    }
+    .stat-box span {
+      font-size: 0.8rem;
+      color: #999;
+    }
+    .action-buttons {
+      display: flex;
+      justify-content: center;
+      gap: 1rem;
+      margin-bottom: 1rem;
+    }
+    .btn {
+      padding: 0.6rem 1.2rem;
+      border-radius: 20px;
+      border: none;
+      cursor: pointer;
+      font-weight: 700;
+      font-size: 0.9rem;
+      color: #fff;
+      transition: background 0.3s ease;
+    }
+    .edit-btn { background: #3498db; }
+    .edit-btn:hover { background: #2980b9; }
+    .logout-btn { background: #fda085; }
+    .logout-btn:hover { background: #f88f60; }
+    .edit-form {
+      display: none;
+      padding: 1rem 1.5rem;
+      border-top: 1px solid #eee;
+    }
+    .edit-form input,
+    .edit-form textarea {
+      width: 100%;
+      padding: 0.8rem;
+      margin-bottom: 1rem;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      font-size: 1rem;
+      outline: none;
+    }
+    .save-btn {
+      width: 100%;
+      padding: 0.8rem;
+      background: #3498db;
+      border: none;
+      border-radius: 6px;
+      font-size: 1rem;
+      font-weight: 700;
+      color: #fff;
+      cursor: pointer;
+    }
+    .save-btn:hover { background: #2980b9; }
+    .footer-space { height: 2rem; }
+  </style>
+</head>
+<body>
+  <div class="navbar">
+    <a href="home.html" class="nav-item">Home</a>
+    <a href="profile.html" class="nav-item">Profile</a>
+    <a href="#" class="nav-item" id="logout">Logout</a>
+  </div>
+  <div class="profile-container">
+    <div class="profile-header">
+      <img src="" alt="Profile Picture" class="profile-pic" id="profile-pic">
+    </div>
+    <div class="profile-info">
+      <h2 id="profile-name">User Name</h2>
+      <p id="profile-bio">A short bio goes here.</p>
+    </div>
+    <div class="action-buttons" id="action-buttons">
+      <!-- For own profile: Edit Profile & Logout buttons -->
+    </div>
+    <div class="stats-row">
+      <div class="stat-box">
+        <h3 id="posts-count">0</h3>
+        <span>Posts</span>
+      </div>
+      <div class="stat-box">
+        <h3 id="followers-count">0</h3>
+        <span>Followers</span>
+      </div>
+      <div class="stat-box">
+        <h3 id="following-count">0</h3>
+        <span>Following</span>
+      </div>
+    </div>
+    <!-- Edit Profile Form -->
+    <div class="edit-form" id="edit-form">
+      <h3>Edit Your Profile</h3>
+      <input type="text" id="edit-name" placeholder="Name">
+      <textarea id="edit-bio" rows="3" placeholder="Bio"></textarea>
+      <input type="text" id="edit-profile-pic" placeholder="Profile Picture URL">
+      <p style="text-align:center; margin:0.5rem 0;">OR</p>
+      <input type="file" id="profile-pic-file" accept="image/*">
+      <button class="save-btn" id="save-btn">Save Changes</button>
+    </div>
+    <div class="footer-space"></div>
+  </div>
+  <script>
+    // Retrieve the selected profile from localStorage; if not set, default to myUser.
+    let selectedProfile = JSON.parse(localStorage.getItem('selectedProfile'));
+    if (!selectedProfile) {
+      selectedProfile = JSON.parse(localStorage.getItem('myUser'));
+      if (!selectedProfile) { window.location.href = "index.html"; }
+    }
+    // Populate profile page.
+    document.getElementById('profile-name').textContent = selectedProfile.name;
+    document.getElementById('profile-bio').textContent = selectedProfile.bio;
+    document.getElementById('profile-pic').src = selectedProfile.profilePic;
+    document.getElementById('posts-count').textContent = selectedProfile.posts || 0;
+    document.getElementById('followers-count').textContent = selectedProfile.followers || 0;
+    document.getElementById('following-count').textContent = selectedProfile.following || 0;
+    
+    // Retrieve logged-in user (myUser).
+    const myUser = JSON.parse(localStorage.getItem('myUser')) || { username: "" };
+    
+    // For own profile, show Edit Profile and Logout buttons.
+    const actionButtons = document.getElementById('action-buttons');
+    if (selectedProfile.username === myUser.username) {
+      actionButtons.innerHTML = `
+        <button class="btn edit-btn" id="edit-btn">Edit Profile</button>
+        <button class="btn logout-btn" id="logout-btn">Logout</button>
+      `;
+    }
+    
+    // Toggle Edit Profile Form.
+    const editBtn = document.getElementById('edit-btn');
+    const editForm = document.getElementById('edit-form');
+    if (editBtn) {
+      editBtn.addEventListener('click', function() {
+        document.getElementById('edit-name').value = selectedProfile.name;
+        document.getElementById('edit-bio').value = selectedProfile.bio;
+        document.getElementById('edit-profile-pic').value = selectedProfile.profilePic;
+        editForm.style.display = (editForm.style.display === "block") ? "none" : "block";
+      });
+    }
+    
+    // Handle file selection to update profile picture.
+    document.getElementById('profile-pic-file').addEventListener('change', function(event) {
+      const file = event.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          document.getElementById('edit-profile-pic').value = e.target.result;
+          document.getElementById('profile-pic').src = e.target.result;
+        };
+        reader.readAsDataURL(file);
+      }
+    });
+    
+    // Save changes.
+    document.getElementById('save-btn').addEventListener('click', function() {
+      selectedProfile.name = document.getElementById('edit-name').value;
+      selectedProfile.bio = document.getElementById('edit-bio').value;
+      selectedProfile.profilePic = document.getElementById('edit-profile-pic').value;
+      localStorage.setItem('myUser', JSON.stringify(selectedProfile));
+      localStorage.setItem('selectedProfile', JSON.stringify(selectedProfile));
+      document.getElementById('profile-name').textContent = selectedProfile.name;
+      document.getElementById('profile-bio').textContent = selectedProfile.bio;
+      document.getElementById('profile-pic').src = selectedProfile.profilePic;
+      editForm.style.display = "none";
+      alert("Profile updated successfully!");
+    });
+    
+    // Logout functionality (also attached to navbar logout link).
+    document.getElementById('logout').addEventListener('click', function(e) {
+      e.preventDefault();
+      performLogout();
+    });
+    document.getElementById('logout-btn') && document.getElementById('logout-btn').addEventListener('click', function(e) {
+      e.preventDefault();
+      performLogout();
+    });
+    function performLogout() {
+      document.cookie = "fusionHubUser=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; Secure; SameSite=Lax";
+      localStorage.removeItem("myUser");
+      localStorage.removeItem("fusionHubToken");
+      window.location.href = "index.html";
+    }
+  </script>
+</body>
+</html>
