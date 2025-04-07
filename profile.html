@@ -187,44 +187,37 @@
     <div class="footer-space"></div>
   </div>
   <script>
-    // Retrieve the selected profile from localStorage; if not set, default to myUser.
-    let selectedProfile = JSON.parse(localStorage.getItem('selectedProfile'));
-    if (!selectedProfile) {
-      selectedProfile = JSON.parse(localStorage.getItem('myUser'));
-      if (!selectedProfile) { window.location.href = "index.html"; }
-    }
-    // Populate profile page.
-    document.getElementById('profile-name').textContent = selectedProfile.name;
-    document.getElementById('profile-bio').textContent = selectedProfile.bio;
-    document.getElementById('profile-pic').src = selectedProfile.profilePic;
-    document.getElementById('posts-count').textContent = selectedProfile.posts || 0;
-    document.getElementById('followers-count').textContent = selectedProfile.followers || 0;
-    document.getElementById('following-count').textContent = selectedProfile.following || 0;
-    
     // Retrieve logged-in user (myUser).
     const myUser = JSON.parse(localStorage.getItem('myUser')) || { username: "" };
-    
-    // For own profile, show Edit Profile and Logout buttons.
+    if (!myUser) { window.location.href = "index.html"; } // Redirect if no user is logged in
+
+    // Populate profile page with the logged-in user's data.
+    document.getElementById('profile-name').textContent = myUser.name;
+    document.getElementById('profile-bio').textContent = myUser.bio;
+    document.getElementById('profile-pic').src = myUser.profilePic;
+    document.getElementById('posts-count').textContent = myUser.posts || 0;
+    document.getElementById('followers-count').textContent = myUser.followers || 0;
+    document.getElementById('following-count').textContent = myUser.following || 0;
+
+    // For the current user, show Edit Profile and Logout buttons.
     const actionButtons = document.getElementById('action-buttons');
-    if (selectedProfile.username === myUser.username) {
-      actionButtons.innerHTML = `
-        <button class="btn edit-btn" id="edit-btn">Edit Profile</button>
-        <button class="btn logout-btn" id="logout-btn">Logout</button>
-      `;
-    }
-    
+    actionButtons.innerHTML = `
+      <button class="btn edit-btn" id="edit-btn">Edit Profile</button>
+      <button class="btn logout-btn" id="logout-btn">Logout</button>
+    `;
+
     // Toggle Edit Profile Form.
     const editBtn = document.getElementById('edit-btn');
     const editForm = document.getElementById('edit-form');
     if (editBtn) {
       editBtn.addEventListener('click', function() {
-        document.getElementById('edit-name').value = selectedProfile.name;
-        document.getElementById('edit-bio').value = selectedProfile.bio;
-        document.getElementById('edit-profile-pic').value = selectedProfile.profilePic;
+        document.getElementById('edit-name').value = myUser.name;
+        document.getElementById('edit-bio').value = myUser.bio;
+        document.getElementById('edit-profile-pic').value = myUser.profilePic;
         editForm.style.display = (editForm.style.display === "block") ? "none" : "block";
       });
     }
-    
+
     // Handle file selection to update profile picture.
     document.getElementById('profile-pic-file').addEventListener('change', function(event) {
       const file = event.target.files[0];
@@ -237,21 +230,20 @@
         reader.readAsDataURL(file);
       }
     });
-    
+
     // Save changes.
     document.getElementById('save-btn').addEventListener('click', function() {
-      selectedProfile.name = document.getElementById('edit-name').value;
-      selectedProfile.bio = document.getElementById('edit-bio').value;
-      selectedProfile.profilePic = document.getElementById('edit-profile-pic').value;
-      localStorage.setItem('myUser', JSON.stringify(selectedProfile));
-      localStorage.setItem('selectedProfile', JSON.stringify(selectedProfile));
-      document.getElementById('profile-name').textContent = selectedProfile.name;
-      document.getElementById('profile-bio').textContent = selectedProfile.bio;
-      document.getElementById('profile-pic').src = selectedProfile.profilePic;
+      myUser.name = document.getElementById('edit-name').value;
+      myUser.bio = document.getElementById('edit-bio').value;
+      myUser.profilePic = document.getElementById('edit-profile-pic').value;
+      localStorage.setItem('myUser', JSON.stringify(myUser));
+      document.getElementById('profile-name').textContent = myUser.name;
+      document.getElementById('profile-bio').textContent = myUser.bio;
+      document.getElementById('profile-pic').src = myUser.profilePic;
       editForm.style.display = "none";
       alert("Profile updated successfully!");
     });
-    
+
     // Logout functionality (also attached to navbar logout link).
     document.getElementById('logout').addEventListener('click', function(e) {
       e.preventDefault();
@@ -261,10 +253,10 @@
       e.preventDefault();
       performLogout();
     });
+
     function performLogout() {
       document.cookie = "fusionHubUser=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; Secure; SameSite=Lax";
       localStorage.removeItem("myUser");
-      localStorage.removeItem("fusionHubToken");
       window.location.href = "index.html";
     }
   </script>
