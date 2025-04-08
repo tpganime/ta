@@ -77,16 +77,15 @@
     }
   </style>
 </head>
-  <!-- PushAlert -->
-<script type="text/javascript">
-        (function(d, t) {
-                var g = d.createElement(t),
-                s = d.getElementsByTagName(t)[0];
-                g.src = "https://cdn.pushalert.co/integrate_c60da3e2d3a43774f67c536244dde99b.js";
-                s.parentNode.insertBefore(g, s);
-        }(document, "script"));
+<script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
+<script>
+  window.OneSignalDeferred = window.OneSignalDeferred || [];
+  OneSignalDeferred.push(async function(OneSignal) {
+    await OneSignal.init({
+      appId: "8ee358c0-4230-4076-b020-71fdb60fb519",
+    });
+  });
 </script>
-<!-- End PushAlert -->
 <body>
   <div class="navbar">
     <a href="home.html" class="nav-item">Home</a>
