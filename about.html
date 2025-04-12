@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>About Fusion Hub</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    /* Global Styles */
+    html, body {
+      height: 100%;
+      margin: 0;
+      padding: 0;
+    }
+    body {
+      font-family: 'Roboto', sans-serif;
+      background: linear-gradient(135deg, #fda085, #f6d365);
+      color: #333;
+      text-align: center;
+      position: relative;
+    }
+    .navbar {
+      background: #fff;
+      padding: 1rem;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+      display: flex;
+      justify-content: center;
+      gap: 1rem;
+    }
+    .nav-item {
+      text-decoration: none;
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: #3498db;
+      transition: color 0.3s ease;
+      cursor: pointer;
+    }
+    .nav-item:hover {
+      color: #2980b9;
+    }
+    .container {
+      padding: 2rem;
+    }
+    /* Profile picture at top */
+    .profile {
+      width: 150px;
+      height: 150px;
+      border-radius: 50%;
+      margin: 1rem auto;
+      object-fit: cover;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+    .owner-name {
+      font-size: 2rem;
+      font-weight: bold;
+      margin-top: 0.5rem;
+    }
+    .bio {
+      font-size: 1.1rem;
+      margin: 1rem 0;
+      padding: 0 1rem;
+    }
+    .app-version {
+      font-size: 1rem;
+      color: #555;
+      margin-top: 1rem;
+    }
+    /* SPLASH SCREEN STYLES */
+    #splash {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 9999;
+      background-color: #000;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+  </style>
+</head>
+<body>
+  <!-- Full-page splash screen on load -->
+  <div id="splash">
+    <img src="loading.gif" alt="Loading...">
+  </div>
+
+  <div class="navbar">
+    <a class="nav-item" href="home.html">Home</a>
+    <a class="nav-item" href="about.html">About</a>
+  </div>
+  
+  <div class="container">
+    <!-- Profile picture at the top -->
+    <img class="profile" src="profile.jpg" alt="Owner Profile">
+    <!-- Owner name -->
+    <div class="owner-name">TANMAY</div>
+    <!-- Bio -->
+    <div class="bio">
+      THIS APP DESIGN BY CHATGPT AND DEVELOP BY TANMAY OFFERING A SMOOTH UI EXPERIENCE
+    </div>
+    <!-- App version -->
+    <div class="app-version">App Version: 1.0.0</div>
+    <!-- Contact Us Button using fusionhub122@gmail.com -->
+    <div style="margin-top: 1.5rem;">
+      <a class="nav-item" href="mailto:fusionhub122@gmail.com">Contact Us</a>
+    </div>
+  </div>
+
+  <script>
+    // Function to hide the splash screen.
+    function hideSplash() {
+      document.getElementById('splash').style.display = 'none';
+    }
+
+    // Only show splash on first load.
+    window.addEventListener('load', function() {
+      if (!localStorage.getItem('splashShown')) {
+        localStorage.setItem('splashShown', 'true');
+        setTimeout(hideSplash, 2000);
+      } else {
+        hideSplash();
+      }
+    });
+    
+    // Optional: Cookie check if needed.
+    function getCookie(name) {
+      const cname = name + "=";
+      const decodedCookie = decodeURIComponent(document.cookie);
+      const ca = decodedCookie.split(';');
+      for (let c of ca) {
+        c = c.trim();
+        if (c.indexOf(cname) === 0) return c.substring(cname.length, c.length);
+      }
+      return "";
+    }
+    if (!getCookie("fusionHubUser")) {
+      window.location.href = "index.html";
+    }
+  </script>
+</body>
+</html>
