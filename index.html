@@ -165,7 +165,7 @@
       if (!splashTimestamp || (now - splashTimestamp) > threshold) {
         // If no timestamp or more than 3 minutes have passed:
         localStorage.setItem('splashShownTimestamp', now);
-        setTimeout(hideSplash, 5000);
+        setTimeout(hideSplash, 2000);
       } else {
         // Within threshold: hide splash immediately.
         hideSplash();
