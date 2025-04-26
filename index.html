@@ -89,6 +89,39 @@
       z-index: 1000; 
     }
     #micButton.granted { background: #004d40; }
+
+    /* Permission Popup */
+    #permissionPopup {
+      display: none;
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: rgba(0,0,0,0.5);
+      z-index: 3000;
+      justify-content: center;
+      align-items: center;
+    }
+    #permissionPopup div {
+      background: #fff;
+      padding: 20px;
+      border-radius: 10px;
+      text-align: center;
+      max-width: 300px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.4);
+    }
+    #permissionPopup h2 {
+      margin-bottom: 10px;
+    }
+    #permissionPopup button {
+      margin-top: 15px;
+      padding: 10px 20px;
+      background: #00796b;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      font-size: 16px;
+      cursor: pointer;
+    }
   </style>
 </head>
 <body>
@@ -122,6 +155,15 @@
   <button id="micButton">🎤</button>
   <div id="fusionBot"><img src="ai.gif" alt="FusionBot"></div>
   <div id="speechBubble"></div>
+
+  <!-- Microphone Permission Popup -->
+  <div id="permissionPopup">
+    <div>
+      <h2>Microphone Access Needed</h2>
+      <p>Please click "Allow" on the next popup to enable voice commands.</p>
+      <button id="continueBtn">Continue</button>
+    </div>
+  </div>
 
   <script>
     function openLink(url) {
@@ -167,6 +209,8 @@
     const micBtn = document.getElementById('micButton');
     const bot = document.getElementById('fusionBot');
     const bubble = document.getElementById('speechBubble');
+    const permissionPopup = document.getElementById('permissionPopup');
+    const continueBtn = document.getElementById('continueBtn');
 
     function showBubble(txt) {
       bubble.textContent = txt;
@@ -187,18 +231,7 @@
 
     micBtn.addEventListener('click', async () => {
       if (!micInitialized) {
-        try {
-          const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-          stream.getTracks().forEach(track => track.stop());
-          micAllowed = true;
-          micInitialized = true;
-          micBtn.classList.add('granted');
-          speak("Microphone access granted. You can now use voice commands.");
-        } catch (err) {
-          alert('Microphone access denied.');
-          console.error(err);
-          return;
-        }
+        permissionPopup.style.display = 'flex';
       } else {
         if (!getUserProfile() && !setupMode) {
           initiateUserSetup();
@@ -210,6 +243,21 @@
           recognition.start();
           micBtn.textContent = '🔴';
         }
+      }
+    });
+
+    continueBtn.addEventListener('click', async () => {
+      permissionPopup.style.display = 'none';
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        stream.getTracks().forEach(track => track.stop());
+        micAllowed = true;
+        micInitialized = true;
+        micBtn.classList.add('granted');
+        speak("Microphone access granted. You can now use voice commands.");
+      } catch (err) {
+        alert('Microphone access denied.');
+        console.error(err);
       }
     });
 
@@ -234,6 +282,7 @@
         }
       }
 
+      // Your commands here
       if (text.includes('open music')) {
         speak('Opening music');
         openLink('https://m.soundcloud.com/');
@@ -256,45 +305,21 @@
         speak(`The time is ${time}. Today is ${dateInfo}.`);
       } else if (text.includes('help')) {
         const commands = [
-          "Open music", "Open game server 1", "Open game server 2", "Open anime", "Open ChatGPT",
-          "What time is it", "Tell me a joke", "Hello", "Hi", "Welcome", "Bye"
+          "Open music", "Open game server 1", "Open game server 2", "Open anime", "Open ChatGPT", "What time is it", "Tell me a joke", "Hello", "How are you", "Bye"
         ];
         speak("Here are some things you can say: " + commands.join(", "));
         showBubble("Commands: " + commands.join(", "));
       } else if (text.includes('hello') || text.includes('hi') || text.includes('welcome')) {
         const profile = getUserProfile();
         if (profile && profile.name) {
-          speak('Hello ' + profile.name + '! Welcome back.');
+          speak('Hello ' + profile.name + '!');
         } else {
-          speak('Hello there! Welcome.');
+          speak('Hello there!');
         }
       } else if (text.includes('how are you')) {
         speak('I am doing great, thank you!');
       } else if (text.includes('tell me a joke')) {
-        const jokes = [
-          "Why did the JavaScript developer go broke? Because he kept using promises.",
-          "Why don't scientists trust atoms? Because they make up everything!",
-          "Why did the scarecrow win an award? Because he was outstanding in his field!",
-          "Why don’t programmers like nature? Too many bugs.",
-          "Why do Java developers wear glasses? Because they don't C#.",
-          "Why was the math book sad? It had too many problems.",
-          "Parallel lines have so much in common. It’s a shame they’ll never meet.",
-          "Why did the computer catch a cold? It left its Windows open.",
-          "Why do cows have hooves instead of feet? Because they lactose.",
-          "Why did the cookie go to the hospital? Because it felt crummy.",
-          "What do you get when you cross a snowman and a vampire? Frostbite.",
-          "I told my computer I needed a break, and it said: 'No problem, I'll go to sleep.'",
-          "What is a computer’s favorite snack? Microchips!",
-          "Why was the robot so tired after his road trip? He had a hard drive.",
-          "Why did the smartphone go to therapy? Low self-esteem battery.",
-          "What do you call 8 hobbits? A hob-byte.",
-          "Why did the function break up with the loop? Too many endless promises.",
-          "Why was the website feeling depressed? It had too many 404s.",
-          "How does a computer get drunk? It takes screenshots.",
-          "Why couldn't the leopard play hide and seek? Because he was always spotted."
-        ];
-        const randomJoke = jokes[Math.floor(Math.random() * jokes.length)];
-        speak(randomJoke);
+        speak('Why did the JavaScript developer go broke? Because he kept using promises.');
       } else if (text.includes('bye')) {
         speak('Goodbye! See you later.');
       } else {
@@ -311,4 +336,4 @@
     recognition.onerror = err => console.error(err.error);
   </script>
 </body>
-</html>
+        </html>
