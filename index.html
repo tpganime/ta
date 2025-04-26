@@ -1,162 +1,314 @@
-<!DOCTYPE html><html lang="en">
+<!DOCTYPE html>
+<html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1,maximum-scale=1">
-  <title>Fusion Hub - Home</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Fusion Hub – Home with FusionBot</title>
   <style>
-    :root {
-      --bg-start: #a0e8d7;
-      --bg-end: #c6fff2;
-      --item-bg: rgba(255,255,255,0.98);
-      --shadow: rgba(0,0,0,0.1);
-      --shadow-hover: rgba(0,0,0,0.2);
-      --fast: 0.15s ease-out;
-      --med: 0.3s ease;
+    :root { 
+      --bg-start: #aeecdb; 
+      --bg-end: #d0f5ea; 
+      --item-bg: rgba(255,255,255,0.95); 
+      --shadow: rgba(0,0,0,0.15); 
+      --hover: rgba(0,0,0,0.25); 
     }
-    * { box-sizing: border-box; }
-    html, body { height:100%; margin:0; padding:0; overscroll-behavior-y: contain; }
-    body {
-      font-family: 'Roboto', sans-serif;
-      background: linear-gradient(135deg, var(--bg-start), var(--bg-end));
-      overflow-x: hidden;
-      perspective: 600px;
-      transform: translateY(0);
-      transition: transform var(--med);
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { height: 100%; }
+    body { 
+      font-family: Roboto, sans-serif; 
+      background: linear-gradient(135deg, var(--bg-start), var(--bg-end)); 
+      overflow-x: hidden; 
     }
-    .container { padding:2rem; text-align:center; }
-    h1 { font-size:2.2rem; margin-bottom:0.5rem; color: #222; }
-    p { font-size:1.1rem; margin-bottom:2rem; color: #444; }
-    .app-grid {
-      display:grid;
-      grid-template-columns:repeat(auto-fit, minmax(140px,1fr));
-      gap:18px;
-      max-width:800px;
-      margin:0 auto;
-      perspective:400px;
+    .container { padding: 2rem; text-align: center; }
+    .app-grid { 
+      display: grid; 
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); 
+      gap: 18px; 
+      max-width: 800px; 
+      margin: 0 auto; 
     }
-    .app-item {
-      background:var(--item-bg);
-      border-radius:10px;
-      padding:15px;
-      text-align:center;
-      box-shadow:0 2px 6px var(--shadow);
-      cursor:pointer;
-      transform-style:preserve-3d;
-      transition:transform var(--med), box-shadow var(--med);
-      animation: float 5s ease-in-out infinite;
+    .app-item { 
+      background: var(--item-bg); 
+      border-radius: 10px; 
+      padding: 15px; 
+      text-align: center; 
+      box-shadow: 0 3px 8px var(--shadow); 
+      cursor: pointer; 
+      transition: transform .35s, box-shadow .35s; 
     }
-    .app-item:hover { transform:translateZ(6px) rotateX(2deg) rotateY(2deg) scale(1.01); box-shadow:0 6px 12px var(--shadow-hover); }
-    .app-item:active { transition: transform var(--fast); transform: scale(1.08) translateZ(4px); }
-    .app-item.pop { animation: pop 0.25s ease-out forwards; }
-    @keyframes pop { 0% { transform: scale(1); } 50% { transform: scale(1.15); } 100% { transform: scale(1); } }
-    .app-item img { width:50px; height:50px; margin-bottom:6px; transition:transform var(--fast);}    
-    .app-item span { display:block; font-size:0.9rem; font-weight:700; color: #333; }
-    @keyframes float { 0%,100%{transform:translateY(0);} 50%{transform:translateY(-3px);} }/* Initial splash overlay */
-#splash {
-  position:fixed; top:0; left:0; width:100%; height:100%;
-  background:#000; display:flex; align-items:center; justify-content:center;
-  z-index:9999;
-  animation: fadeOut 0.6s ease-out 0.5s forwards;
-}
-@keyframes fadeOut { to{opacity:0; visibility:hidden;} }
-
-/* Loading overlay */
-#buttonLoading {
-  position:fixed; top:0; left:0; width:100%; height:100%;
-  background:rgba(0,0,0,0.8);
-  display:flex; align-items:center; justify-content:center;
-  opacity:0; visibility:hidden;
-  transition:opacity var(--fast);
-  z-index:10000;
-}
-#buttonLoading.visible { opacity:1; visibility:visible; }
-
-/* Hand GIF at top during pull-to-refresh */
-#handPull {
-  position:fixed;
-  top:0; left:50%;
-  transform:translateX(-50%);
-  display:none;
-  z-index:10002;
-  pointer-events:none;
-  opacity:0;
-  transition:opacity 0.2s ease;
-}
-#handPull.visible { display:block; opacity:1; }
-#handPull img { width:200px; height:auto; } /* smaller size */
-@keyframes handSequence { 0% { top:0; } 100% { top:20%; } }
-
-@media(max-width:600px){ .app-grid { grid-template-columns:repeat(2,1fr) !important; } img { width:150px; } }
-
+    .app-item:hover { 
+      transform: scale(1.02); 
+      box-shadow: 0 6px 16px var(--hover); 
+    }
+    .app-item img { width: 55px; height: 55px; margin-bottom: 8px; }
+    .app-item span { font-weight: 700; }
+    #fusionBot { 
+      position: fixed; 
+      bottom: 100px; 
+      right: 20px; 
+      width: 100px; 
+      height: 100px; 
+      background: #ffffffcc; 
+      border-radius: 50%; 
+      box-shadow: 0 3px 8px rgba(0,0,0,0.3); 
+      display: flex; 
+      align-items: center; 
+      justify-content: center; 
+      opacity: 0; 
+      pointer-events: none; 
+      transition: opacity .3s; 
+    }
+    #fusionBot.active { opacity: 1; }
+    #fusionBot img { width: 80px; height: 80px; }
+    #speechBubble { 
+      position: fixed; 
+      bottom: 210px; 
+      right: 130px; 
+      max-width: 250px; 
+      padding: 10px; 
+      background: #fff; 
+      border-radius: 10px; 
+      box-shadow: 0 3px 8px rgba(0,0,0,0.2); 
+      font-size: 14px; 
+      opacity: 0; 
+      transition: opacity .3s; 
+    }
+    #speechBubble.active { opacity: 1; }
+    #micButton { 
+      position: fixed; 
+      bottom: 80px; 
+      right: 20px; 
+      background: #00796b; 
+      color: #fff; 
+      border: none; 
+      padding: 15px; 
+      border-radius: 50%; 
+      font-size: 20px; 
+      box-shadow: 0 4px 8px rgba(0,0,0,0.3); 
+      cursor: pointer; 
+      z-index: 1000; 
+    }
+    #micButton.granted { background: #004d40; }
   </style>
 </head>
 <body>
-  <div id="buttonLoading"><img src="button.gif" alt="Loading..."></div>
-  <div id="splash"></div>
-  <div id="handPull"><img src="hand.gif" alt="Pull to Refresh"></div>
   <div class="container">
     <h1>Welcome to Fusion Hub!</h1>
-    <p>Discover your favorite apps</p>
+    <p>Click 🎤 to enable voice commands.</p>
     <div class="app-grid">
-      <div class="app-item" onclick="handleClick(this, 'https://chat.openai.com/')">
-        <img src="gpt.png" alt="ChatGPT"><span>ChatGPT</span>
+      <div class="app-item" onclick="openLink('https://chat.openai.com/')">
+        <img src="gpt.png" alt="ChatGPT">
+        <span>ChatGPT</span>
       </div>
-      <div class="app-item" onclick="handleClick(this, 'https://m.soundcloud.com/')">
-        <img src="music.png" alt="Music"><span>Music</span>
+      <div class="app-item" onclick="openLink('https://m.soundcloud.com/')">
+        <img src="music.png" alt="Music">
+        <span>Music</span>
       </div>
-      <div class="app-item" onclick="handleClick(this, 'https://www.crazygames.com/')">
-        <img src="games.jpg" alt="Game Server 1"><span>Game Server 1</span>
+      <div class="app-item" onclick="openLink('https://www.crazygames.com/')">
+        <img src="games.jpg" alt="Game Server 1">
+        <span>Game Server&nbsp;1</span>
       </div>
-      <div class="app-item" onclick="handleClick(this, 'https://poki.com/')">
-        <img src="games.jpg" alt="Game Server 2"><span>Game Server 2</span>
+      <div class="app-item" onclick="openLink('https://poki.com/')">
+        <img src="games.jpg" alt="Game Server 2">
+        <span>Game Server&nbsp;2</span>
       </div>
-      <div class="app-item" onclick="handleClick(this, 'https://9anime.org.lv/')">
-        <img src="Anime.jpg" alt="Anime"><span>Anime</span>
+      <div class="app-item" onclick="openLink('https://9anime.org.lv/')">
+        <img src="Anime.jpg" alt="Anime">
+        <span>Anime</span>
       </div>
     </div>
   </div>
+
+  <button id="micButton">🎤</button>
+  <div id="fusionBot"><img src="ai.gif" alt="FusionBot"></div>
+  <div id="speechBubble"></div>
+
   <script>
-    let startY = 0, isPulling = false;
-    const hand = document.getElementById('handPull');
-    const body = document.body;
-    const splash = document.getElementById('splash');splash.addEventListener('animationend', () => splash.style.display = 'none');
+    function openLink(url) {
+      window.location.href = url;
+    }
 
-window.addEventListener('load', () => {
-  const shown = localStorage.getItem('splashShownTimestamp');
-  const now = Date.now();
-  if (!shown || now - shown > 180000) localStorage.setItem('splashShownTimestamp', now);
-  else splash.style.display = 'none';
-});
+    function saveUserProfile(name, gender) {
+      const profile = { name, gender };
+      localStorage.setItem("userProfile", JSON.stringify(profile));
+    }
 
-window.addEventListener('touchstart', e => { if (window.scrollY === 0) startY = e.touches[0].clientY; });
-window.addEventListener('touchmove', e => {
-  const diff = e.touches[0].clientY - startY;
-  if (diff > 15 && window.scrollY === 0) {
-    isPulling = true;
-    hand.classList.add('visible');
-    hand.style.top = `0px`;
-    body.style.transform = `translateY(${diff * 0.1}px)`;
-  }
-});
-window.addEventListener('touchend', () => {
-  if (isPulling) {
-    hand.style.animation = 'handSequence 0.8s ease-out forwards';
-    body.style.transition = 'transform 0.8s ease-out';
-    body.style.transform = 'translateY(20%)';
-    setTimeout(() => hand.classList.remove('visible'), 3000);
-    setTimeout(() => location.reload(), 3000);
-  }
-  setTimeout(() => { body.style.transform = 'translateY(0)'; }, 3000);
-  isPulling = false;
-});
+    function getUserProfile() {
+      const profile = localStorage.getItem("userProfile");
+      return profile ? JSON.parse(profile) : null;
+    }
 
-function handleClick(el, url) {
-  el.classList.add('pop');
-  setTimeout(() => document.getElementById('buttonLoading').classList.add('visible'), 200);
-  setTimeout(() => location.href = url, 700);
-}
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    const recognition = new SpeechRecognition();
+    recognition.continuous = true;
+    recognition.interimResults = false;
+    recognition.lang = 'en-US';
 
-  </script>  <!-- Chatling Embed -->  <script> window.chtlConfig = { chatbotId: "2156756516" } </script>  <script async data-id="2156756516" id="chatling-embed-script" type="text/javascript" src="https://chatling.ai/js/embed.js"></script></body>
+    let micAllowed = false;
+    let micInitialized = false;
+    let voices = [];
+    speechSynthesis.onvoiceschanged = () => { 
+      voices = speechSynthesis.getVoices().filter(v => v.lang.startsWith('en'));
+    };
+    voices = speechSynthesis.getVoices().filter(v => v.lang.startsWith('en'));
+
+    function getBestVoice() {
+      return voices.find(v => /natural|google|enhanced|neural/i.test(v.name)) || voices[0];
+    }
+
+    function speak(text) {
+      const msg = new SpeechSynthesisUtterance(text);
+      msg.voice = getBestVoice();
+      msg.lang = 'en-US';
+      speechSynthesis.speak(msg);
+      showBubble(text);
+    }
+
+    const micBtn = document.getElementById('micButton');
+    const bot = document.getElementById('fusionBot');
+    const bubble = document.getElementById('speechBubble');
+
+    function showBubble(txt) {
+      bubble.textContent = txt;
+      bubble.classList.add('active');
+      clearTimeout(bubble._t);
+      bubble._t = setTimeout(() => bubble.classList.remove('active'), 4000);
+    }
+
+    function initiateUserSetup() {
+      setupMode = true;
+      setupStage = "askName";
+      speak("Welcome to Fusion Hub. Please tell me your name.");
+    }
+
+    let setupMode = false;
+    let setupStage = "";
+    let tempName = "";
+
+    micBtn.addEventListener('click', async () => {
+      if (!micInitialized) {
+        try {
+          const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+          stream.getTracks().forEach(track => track.stop());
+          micAllowed = true;
+          micInitialized = true;
+          micBtn.classList.add('granted');
+          speak("Microphone access granted. You can now use voice commands.");
+        } catch (err) {
+          alert('Microphone access denied.');
+          console.error(err);
+          return;
+        }
+      } else {
+        if (!getUserProfile() && !setupMode) {
+          initiateUserSetup();
+        }
+        if (micBtn.textContent === '🔴') {
+          recognition.stop();
+          micBtn.textContent = '🎤';
+        } else {
+          recognition.start();
+          micBtn.textContent = '🔴';
+        }
+      }
+    });
+
+    recognition.onresult = event => {
+      const text = event.results[event.results.length - 1][0].transcript.toLowerCase().trim();
+      console.log('Command:', text);
+      bot.classList.add('active');
+
+      if (setupMode) {
+        if (setupStage === "askName") {
+          tempName = text;
+          speak("Thank you, " + tempName + ". Please tell me your gender.");
+          setupStage = "askGender";
+          return;
+        } else if (setupStage === "askGender") {
+          const gender = text;
+          saveUserProfile(tempName, gender);
+          speak("Hello " + tempName + "! Your profile has been set up.");
+          setupMode = false;
+          setupStage = "";
+          return;
+        }
+      }
+
+      if (text.includes('open music')) {
+        speak('Opening music');
+        openLink('https://m.soundcloud.com/');
+      } else if (text.includes('open game server 1')) {
+        speak('Opening server one');
+        openLink('https://www.crazygames.com/');
+      } else if (text.includes('open game server 2')) {
+        speak('Opening server two');
+        openLink('https://poki.com/');
+      } else if (text.includes('open anime')) {
+        speak('Opening anime');
+        openLink('https://9anime.org.lv/');
+      } else if (text.includes('open chatgpt')) {
+        speak('Opening ChatGPT');
+        openLink('https://chat.openai.com/');
+      } else if (['what is time','what is the time','what time it is','what the time it is','what time is it'].some(q => text.includes(q))) {
+        const now = new Date();
+        const time = now.toLocaleTimeString('en-US', { timeZone: 'Asia/Kolkata' });
+        const dateInfo = now.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', timeZone: 'Asia/Kolkata' });
+        speak(`The time is ${time}. Today is ${dateInfo}.`);
+      } else if (text.includes('help')) {
+        const commands = [
+          "Open music", "Open game server 1", "Open game server 2", "Open anime", "Open ChatGPT",
+          "What time is it", "Tell me a joke", "Hello", "Hi", "Welcome", "Bye"
+        ];
+        speak("Here are some things you can say: " + commands.join(", "));
+        showBubble("Commands: " + commands.join(", "));
+      } else if (text.includes('hello') || text.includes('hi') || text.includes('welcome')) {
+        const profile = getUserProfile();
+        if (profile && profile.name) {
+          speak('Hello ' + profile.name + '! Welcome back.');
+        } else {
+          speak('Hello there! Welcome.');
+        }
+      } else if (text.includes('how are you')) {
+        speak('I am doing great, thank you!');
+      } else if (text.includes('tell me a joke')) {
+        const jokes = [
+          "Why did the JavaScript developer go broke? Because he kept using promises.",
+          "Why don't scientists trust atoms? Because they make up everything!",
+          "Why did the scarecrow win an award? Because he was outstanding in his field!",
+          "Why don’t programmers like nature? Too many bugs.",
+          "Why do Java developers wear glasses? Because they don't C#.",
+          "Why was the math book sad? It had too many problems.",
+          "Parallel lines have so much in common. It’s a shame they’ll never meet.",
+          "Why did the computer catch a cold? It left its Windows open.",
+          "Why do cows have hooves instead of feet? Because they lactose.",
+          "Why did the cookie go to the hospital? Because it felt crummy.",
+          "What do you get when you cross a snowman and a vampire? Frostbite.",
+          "I told my computer I needed a break, and it said: 'No problem, I'll go to sleep.'",
+          "What is a computer’s favorite snack? Microchips!",
+          "Why was the robot so tired after his road trip? He had a hard drive.",
+          "Why did the smartphone go to therapy? Low self-esteem battery.",
+          "What do you call 8 hobbits? A hob-byte.",
+          "Why did the function break up with the loop? Too many endless promises.",
+          "Why was the website feeling depressed? It had too many 404s.",
+          "How does a computer get drunk? It takes screenshots.",
+          "Why couldn't the leopard play hide and seek? Because he was always spotted."
+        ];
+        const randomJoke = jokes[Math.floor(Math.random() * jokes.length)];
+        speak(randomJoke);
+      } else if (text.includes('bye')) {
+        speak('Goodbye! See you later.');
+      } else {
+        speak("I'm sorry, I didn't understand that.");
+      }
+    };
+
+    recognition.onend = () => {
+      if (micAllowed && micBtn.textContent === '🔴') {
+        setTimeout(() => recognition.start(), 500);
+      }
+    };
+
+    recognition.onerror = err => console.error(err.error);
+  </script>
+</body>
 </html>
