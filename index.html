@@ -195,10 +195,6 @@
         return;
       }
 
-      // Initialize Web Speech API
-      const speechSynthesis = window.speechSynthesis;
-      const utterance = new SpeechSynthesisUtterance();
-
       // Preloaded 20 jokes
       const jokes = [
         "Why don’t skeletons fight each other? Because they don’t have the guts!",
@@ -238,28 +234,14 @@
       let isSettingUp = false;
       let expectingFollowUp = false; // Track if awaiting a response to "How about you?"
 
-      function showBubble(text, shouldSpeak = true) {
+      function showBubble(text) {
         if (!bubble) {
           console.error('speechBubble element not found');
           return;
         }
         bubble.textContent = text;
         bubble.classList.add('active');
-        if (shouldSpeak) {
-          speak(text); // Only speak if shouldSpeak is true
-        }
         setTimeout(() => bubble.classList.remove('active'), 5000); // 5 seconds
-      }
-
-      function speak(text) {
-        if (speechSynthesis && text) {
-          utterance.text = text;
-          utterance.lang = 'en-US'; // Set language to English (US)
-          utterance.volume = 1; // 0 to 1
-          utterance.rate = 1; // Speed of speech
-          utterance.pitch = 1; // Pitch of voice
-          speechSynthesis.speak(utterance);
-        }
       }
 
       // Current time and date function with season and day type
@@ -381,15 +363,15 @@
       async function sendMessage() {
         const message = chatInput.value.trim();
         if (!message) {
-          showBubble("Please type a message.", false); // Don't speak "Please type a message."
+          showBubble("Please type a message."); // No speech
           return;
         }
         
         chatInput.value = '';
-        showBubble('Thinking...', false); // Don't speak "Thinking..."
+        showBubble('Thinking...'); // No speech
 
         const response = handleCommand(message);
-        showBubble(response, true); // Speak the actual response
+        showBubble(response); // No speech
       }
 
       // Event Listeners
@@ -400,9 +382,9 @@
 
       // Initial welcome if name is already set
       if (userName) {
-        setTimeout(() => showBubble(`Welcome back, ${userName}! Type 'help' for commands.`, true), 1000);
+        setTimeout(() => showBubble(`Welcome back, ${userName}! Type 'help' for commands.`), 1000);
       }
     });
   </script>
 </body>
-</html>
+  </html>
