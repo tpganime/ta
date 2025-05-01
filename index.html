@@ -121,7 +121,7 @@
 
     #chatInput:focus {
       border-color: #4CAF50;
-      box-shadow: 0 2-digit 8px rgba(76,175,80,0.3);
+      box-shadow: 0 2px 8px rgba(76,175,80,0.3);
     }
 
     #sendBtn {
@@ -148,7 +148,7 @@
 <body>
   <div class="container">
     <h1>Welcome to Fusion Hub!</h1>
-    <p>Use the chat box below to talk to FusionBot.</p>
+    <p>Say "hey TPG", "TPG", or "FusionHub" to wake FusionBot!</p>
     <div class="app-grid">
       <div class="app-item" onclick="window.open('https://chat.openai.com/', '_blank')">
         <img src="gpt.png" alt="ChatGPT">
@@ -233,6 +233,7 @@
       let isFirstMessage = !userName;
       let isSettingUp = false;
       let expectingFollowUp = false; // Track if awaiting a response to "How about you?"
+      let isWakeWordDetected = false; // Track if wake word is detected
 
       function showBubble(text) {
         if (!bubble) {
@@ -242,6 +243,7 @@
         bubble.textContent = text;
         bubble.classList.add('active');
         setTimeout(() => bubble.classList.remove('active'), 5000); // 5 seconds
+        console.log('Displayed:', text); // Debugging
       }
 
       // Current time and date function with season and day type
@@ -291,7 +293,7 @@
             userName = input;
             localStorage.setItem('userName', userName);
             isSettingUp = false;
-            return `Name set to ${userName}! Welcome to FusionBot! Type 'help' for commands.`;
+            return `Name set to ${userName}! Welcome to FusionBot! Say "hey TPG", "TPG", or "FusionHub" to start, or type 'help' for commands.`;
           } else {
             return "Please enter a valid name:";
           }
@@ -363,18 +365,82 @@
       async function sendMessage() {
         const message = chatInput.value.trim();
         if (!message) {
-          showBubble("Please type a message."); // No speech
+          showBubble("Please type a message.");
           return;
         }
         
         chatInput.value = '';
-        showBubble('Thinking...'); // No speech
+        showBubble('Thinking...');
 
         const response = handleCommand(message);
-        showBubble(response); // No speech
+        showBubble(response);
       }
 
-      // Event Listeners
+      // Voice recognition setup
+      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+      let recognition;
+      if (SpeechRecognition) {
+        recognition = new SpeechRecognition();
+        recognition.lang = 'en-US';
+        recognition.interimResults = false;
+        recognition.maxAlternatives = 1;
+        recognition.continuous = true; // Enable continuous listening
+
+        let lastResult = ''; // Store the last recognized phrase
+
+        recognition.onresult = (event) => {
+          const currentResult = event.results[event.results.length - 1][0].transcript.trim().toLowerCase();
+          lastResult = currentResult;
+          console.log('Recognized:', currentResult); // Debugging
+
+          if (!isWakeWordDetected) {
+            showBubble('Listening...');
+          }
+
+          // Check for wake words
+          const wakeWords = ["hey tpg", "tpg", "fusionhub"];
+          if (wakeWords.some(word => lastResult.includes(word))) {
+            isWakeWordDetected = true;
+            showBubble('Wake word detected! Waiting for your command...');
+            return; // Wait for the next command after wake word
+          }
+
+          // Process command only if wake word was detected previously
+          if (isWakeWordDetected && lastResult && !wakeWords.some(word => lastResult.includes(word))) {
+            chatInput.value = lastResult;
+            showBubble('Thinking...');
+            const response = handleCommand(lastResult);
+            showBubble(response);
+            isWakeWordDetected = false; // Reset after processing command
+          }
+        };
+
+        recognition.onerror = (event) => {
+          showBubble('Error: Could not recognize speech. Please check your microphone or try typing.');
+          console.error('Speech recognition error:', event.error); // Debugging
+          recognition.start(); // Restart listening
+        };
+
+        recognition.onend = () => {
+          console.log('Recognition ended, restarting...'); // Debugging
+          recognition.start(); // Always restart listening
+        };
+
+        // Start voice listening automatically
+        try {
+          recognition.start();
+          showBubble('Listening...');
+          console.log('Recognition started'); // Debugging
+        } catch (e) {
+          showBubble('Error: Failed to start recognition. Please check browser permissions.');
+          console.error('Start error:', e); // Debugging
+        }
+      } else {
+        showBubble('Speech recognition not supported in this browser. Please type your message.');
+        console.warn('Speech recognition not supported'); // Debugging
+      }
+
+      // Event Listeners for text input
       sendBtn.addEventListener('click', sendMessage);
       chatInput.addEventListener('keypress', e => {
         if (e.key === 'Enter') sendMessage();
@@ -382,9 +448,9 @@
 
       // Initial welcome if name is already set
       if (userName) {
-        setTimeout(() => showBubble(`Welcome back, ${userName}! Type 'help' for commands.`), 1000);
+        setTimeout(() => showBubble(`Welcome back, ${userName}! Say "hey TPG", "TPG", or "FusionHub" to start, or type 'help' for commands.`), 1000);
       }
     });
   </script>
 </body>
-  </html>
+</html>
