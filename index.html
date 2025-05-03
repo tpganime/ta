@@ -24,7 +24,7 @@
     .container { 
       max-width: 800px;
       margin: 0 auto;
-      padding-bottom: 150px; /* Space for chat */
+      padding-bottom: 250px; /* Space for chat panel and AI image */
     }
 
     .app-grid { 
@@ -97,22 +97,25 @@
 
     #chatPanel {
       position: fixed;
-      bottom: 20px;
+      bottom: 20px; 
       left: 50%;
       transform: translateX(-50%);
       width: calc(100% - 40px);
-      max-width: 600px;
+      max-width: 350px; 
       display: flex;
-      gap: 8px;
+      flex-direction: column;
+      gap: 10px;
       z-index: 1001;
+      padding: 10px;
+      box-sizing: border-box;
     }
 
     #chatInput {
-      flex: 1;
-      padding: 12px 15px;
+      width: 100%;
+      padding: 10px 15px;
       border: 1px solid #ccc;
       border-radius: 25px;
-      font-size: 16px;
+      font-size: 14px;
       background: #fff;
       box-shadow: 0 2px 5px rgba(0,0,0,0.1);
       outline: none;
@@ -124,31 +127,52 @@
       box-shadow: 0 2px 8px rgba(76,175,80,0.3);
     }
 
-    #sendBtn {
-      padding: 12px 20px;
-      background: #4CAF50;
+    #buttonContainer {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      width: 100%;
+    }
+
+    #sendBtn, #micToggleBtn {
+      width: 120px;
+      padding: 10px 15px;
+      background: #4CAF50; 
       color: white;
       border: none;
       border-radius: 25px;
-      font-size: 16px;
+      font-size: 14px;
       cursor: pointer;
       box-shadow: 0 2px 5px rgba(0,0,0,0.2);
       transition: background 0.3s, transform 0.1s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 5px;
     }
 
-    #sendBtn:hover {
+    #sendBtn:hover, #micToggleBtn:hover {
       background: #45a049;
     }
 
-    #sendBtn:active {
+    #sendBtn:active, #micToggleBtn:active {
       transform: scale(0.95);
+    }
+
+    #micToggleBtn.listening {
+      background: #ff4444; 
+    }
+
+    #micToggleBtn::before {
+      content: '🎙️';
+      font-size: 16px;
     }
   </style>
 </head>
 <body>
   <div class="container">
     <h1>Welcome to Fusion Hub!</h1>
-    <p>Say "hey TPG", "TPG", or "FusionHub" to wake FusionBot!</p>
+    <p>Say "hey TPG", "TPG", or "FusionHub" to wake FusionBot! Toggle voice input with the mic button!</p>
     <div class="app-grid">
       <div class="app-item" onclick="window.open('https://chat.openai.com/', '_blank')">
         <img src="gpt.png" alt="ChatGPT">
@@ -166,22 +190,25 @@
         <img src="games.jpg" alt="Games">
         <span>Game Server 2</span>
       </div>
-      <div class="app-item" onclick="window.open('https://aniplaynow.live/', '_blank')">
+      <div class="app-item" onclick="window.open('https://old-anime-site.com/', '_blank')">
         <img src="anime.png" alt="Anime">
         <span>Anime</span>
       </div>
     </div>
   </div>
 
-  <div id="fusionBot">
-    <img src="ai.gif" alt="FusionBot AI Assistant">
-  </div>
-  
   <div id="speechBubble"></div>
 
   <div id="chatPanel">
     <input type="text" id="chatInput" placeholder="Type your message...">
-    <button id="sendBtn">Send</button>
+    <div id="buttonContainer">
+      <button id="sendBtn">Send</button>
+      <button id="micToggleBtn">On</button>
+    </div>
+  </div>
+
+  <div id="fusionBot">
+    <img src="ai.gif" alt="FusionBot AI Assistant">
   </div>
 
   <script>
@@ -189,9 +216,10 @@
       const bubble = document.getElementById('speechBubble');
       const chatInput = document.getElementById('chatInput');
       const sendBtn = document.getElementById('sendBtn');
+      const micToggleBtn = document.getElementById('micToggleBtn');
 
-      if (!bubble || !chatInput || !sendBtn) {
-        console.error('One or more DOM elements not found:', { bubble, chatInput, sendBtn });
+      if (!bubble || !chatInput || !sendBtn || !micToggleBtn) {
+        console.error('One or more DOM elements not found:', { bubble, chatInput, sendBtn, micToggleBtn });
         return;
       }
 
@@ -234,6 +262,7 @@
       let isSettingUp = false;
       let expectingFollowUp = false; // Track if awaiting a response to "How about you?"
       let isWakeWordDetected = false; // Track if wake word is detected
+      let isMicListening = false; // Track mic listening state
 
       function showBubble(text) {
         if (!bubble) {
@@ -248,7 +277,15 @@
 
       // Current time and date function with season and day type
       function getIndiaTime() {
-        const now = new Date('2025-04-30T23:03:00+05:30');
+        // Get the current time in UTC
+        const now = new Date();
+        
+        // Calculate IST offset (UTC+05:30)
+        const istOffset = 5.5 * 60; // 5 hours 30 minutes in minutes
+        const utcOffset = now.getTimezoneOffset(); // User's local timezone offset in minutes
+        const istTime = new Date(now.getTime() + (istOffset + utcOffset) * 60 * 1000);
+
+        // Format the date and time for IST
         const options = {
           timeZone: 'Asia/Kolkata',
           weekday: 'long',
@@ -259,11 +296,16 @@
           minute: '2-digit',
           hour12: true
         };
-        const dateString = now.toLocaleString('en-US', options);
-        const dayOfWeek = now.getDay(); // 0 = Sunday, 1 = Monday, etc.
-        const month = now.getMonth(); // 0 = January, 1 = February, etc.
+        const dateString = istTime.toLocaleString('en-US', options);
+
+        // Determine day type (weekday or weekend)
+        const dayOfWeek = istTime.getDay(); // 0 = Sunday, 1 = Monday, etc.
         const dayType = (dayOfWeek === 0 || dayOfWeek === 6) ? 'a weekend' : 'a weekday';
+
+        // Determine season based on month (simplified for India)
+        const month = istTime.getMonth(); // 0 = January, 1 = February, etc.
         const season = (month >= 2 && month <= 4) ? 'spring' : (month >= 5 && month <= 7) ? 'summer' : (month >= 8 && month <= 10) ? 'autumn' : 'winter';
+
         return `${dateString}, ${dayType} in the ${season} season.`;
       }
 
@@ -279,6 +321,7 @@
 
       function handleCommand(input) {
         const lowerInput = input.toLowerCase().trim();
+        console.log('Processing command:', lowerInput); // Debugging
 
         // Handle first message setup
         if (isFirstMessage) {
@@ -332,8 +375,16 @@
 
         // Handle greetings
         if (lowerInput === "hello" || lowerInput === "hi" || lowerInput === "hey") {
-          const hour = new Date('2025-04-30T23:03:00+05:30').getHours();
+          // Get the current time in IST
+          const now = new Date();
+          const istOffset = 5.5 * 60; // 5 hours 30 minutes in minutes
+          const utcOffset = now.getTimezoneOffset();
+          const istTime = new Date(now.getTime() + (istOffset + utcOffset) * 60 * 1000);
+          
+          // Determine the hour in IST
+          const hour = istTime.getHours();
           const greeting = hour >= 5 && hour < 12 ? "Good morning" : hour >= 12 && hour < 17 ? "Good afternoon" : "Good evening";
+          
           return `${greeting}, ${userName}! Nice to see you! How can I help today?`;
         } else if (lowerInput === "how are you") {
           expectingFollowUp = true; // Set flag to expect a follow-up
@@ -349,7 +400,7 @@
             "music": "https://soundcloud.com/",
             "game server 1": "https://crazygames.com/",
             "game server 2": "https://poki.com/",
-            "anime": "https://aniplaynow.live/"
+            "anime": "https://old-anime-site.com/"
           };
           if (urls[link]) {
             window.open(urls[link], '_blank');
@@ -389,12 +440,14 @@
         let lastResult = ''; // Store the last recognized phrase
 
         recognition.onresult = (event) => {
+          if (!isMicListening) return; // Ignore if mic is off
+
           const currentResult = event.results[event.results.length - 1][0].transcript.trim().toLowerCase();
           lastResult = currentResult;
           console.log('Recognized:', currentResult); // Debugging
 
           if (!isWakeWordDetected) {
-            showBubble('Listening...');
+            showBubble('Listening for "hey TPG", "TPG", or "FusionHub"...');
           }
 
           // Check for wake words
@@ -418,29 +471,57 @@
         recognition.onerror = (event) => {
           showBubble('Error: Could not recognize speech. Please check your microphone or try typing.');
           console.error('Speech recognition error:', event.error); // Debugging
-          recognition.start(); // Restart listening
+          if (isMicListening) {
+            try {
+              recognition.start();
+            } catch (e) {
+              console.error('Restart error:', e);
+            }
+          }
         };
 
         recognition.onend = () => {
-          console.log('Recognition ended, restarting...'); // Debugging
-          recognition.start(); // Always restart listening
+          console.log('Recognition ended, restarting if mic is on...');
+          if (isMicListening) {
+            try {
+              recognition.start();
+            } catch (e) {
+              console.error('Restart error:', e);
+            }
+          }
         };
 
-        // Start voice listening automatically
-        try {
-          recognition.start();
-          showBubble('Listening...');
-          console.log('Recognition started'); // Debugging
-        } catch (e) {
-          showBubble('Error: Failed to start recognition. Please check browser permissions.');
-          console.error('Start error:', e); // Debugging
-        }
+        // Toggle mic listening
+        micToggleBtn.addEventListener('click', () => {
+          if (isMicListening) {
+            isMicListening = false;
+            isWakeWordDetected = false; // Reset wake word state
+            recognition.stop();
+            micToggleBtn.textContent = 'On';
+            micToggleBtn.classList.remove('listening');
+            showBubble('Mic turned off.');
+          } else {
+            isMicListening = true;
+            isWakeWordDetected = false; // Reset wake word state
+            try {
+              recognition.start();
+              micToggleBtn.textContent = 'Off';
+              micToggleBtn.classList.add('listening');
+              showBubble('Listening for "hey TPG", "TPG", or "FusionHub"...');
+            } catch (e) {
+              showBubble('Error: Failed to start mic. Check permissions.');
+              console.error('Start error:', e);
+            }
+          }
+        });
       } else {
+        micToggleBtn.disabled = true;
+        micToggleBtn.textContent = '🎙️ (Not supported)';
+        console.warn('Speech recognition not supported in this browser.');
         showBubble('Speech recognition not supported in this browser. Please type your message.');
-        console.warn('Speech recognition not supported'); // Debugging
       }
 
-      // Event Listeners for text input
+      // Event Listeners for Send button and Enter key
       sendBtn.addEventListener('click', sendMessage);
       chatInput.addEventListener('keypress', e => {
         if (e.key === 'Enter') sendMessage();
@@ -453,4 +534,4 @@
     });
   </script>
 </body>
-</html>
+  </html>
