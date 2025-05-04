@@ -143,24 +143,39 @@
       border-radius: 25px;
       font-size: 14px;
       cursor: pointer;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-      transition: background 0.3s, transform 0.1s;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.2), 0 2px 4px rgba(0,0,0,0.1);
+      transition: transform 0.3s, box-shadow 0.3s, background 0.3s;
       display: flex;
       align-items: center;
       justify-content: center;
       gap: 5px;
+      transform: perspective(500px) rotateX(0deg) rotateY(0deg);
     }
 
     #sendBtn:hover, #micToggleBtn:hover {
       background: #45a049;
+      box-shadow: 0 6px 15px rgba(0,0,0,0.3), 0 3px 6px rgba(0,0,0,0.15);
+      transform: perspective(500px) rotateX(5deg) rotateY(5deg) scale(1.05);
     }
 
     #sendBtn:active, #micToggleBtn:active {
-      transform: scale(0.95);
+      transform: perspective(500px) rotateX(-5deg) rotateY(-5deg) scale(0.95);
+      box-shadow: 0 2px 5px rgba(0,0,0,0.2);
     }
 
     #micToggleBtn.listening {
       background: #ff4444; 
+    }
+
+    #micToggleBtn.listening:hover {
+      background: #e53935;
+      box-shadow: 0 6px 15px rgba(0,0,0,0.3), 0 3px 6px rgba(0,0,0,0.15);
+      transform: perspective(500px) rotateX(5deg) rotateY(5deg) scale(1.05);
+    }
+
+    #micToggleBtn.listening:active {
+      transform: perspective(500px) rotateX(-5deg) rotateY(-5deg) scale(0.95);
+      box-shadow: 0 2px 5px rgba(0,0,0,0.2);
     }
 
     #micToggleBtn::before {
@@ -194,6 +209,10 @@
         <img src="anime.png" alt="Anime">
         <span>Anime</span>
       </div>
+      <div class="app-item" onclick="window.open('https://app.kosmi.io/', '_blank')">
+        <img src="wt.jpg" alt="Watch Together">
+        <span>Watch Together</span>
+      </div>
     </div>
   </div>
 
@@ -213,17 +232,26 @@
 
   <script>
     document.addEventListener('DOMContentLoaded', () => {
+      console.log('DOM loaded, initializing...');
       const bubble = document.getElementById('speechBubble');
       const chatInput = document.getElementById('chatInput');
       const sendBtn = document.getElementById('sendBtn');
       const micToggleBtn = document.getElementById('micToggleBtn');
 
       if (!bubble || !chatInput || !sendBtn || !micToggleBtn) {
-        console.error('One or more DOM elements not found:', { bubble, chatInput, sendBtn, micToggleBtn });
+        console.error('Missing DOM elements:', { bubble, chatInput, sendBtn, micToggleBtn });
+        alert('Error: Required elements not found. Check HTML IDs.');
         return;
       }
 
-      // Preloaded 20 jokes
+      // State variables
+      let userName = localStorage.getItem('userName');
+      let isFirstMessage = !userName;
+      let isSettingUp = false;
+      let isMicListening = false;
+      let isWakeWordDetected = false;
+
+      // Preloaded responses
       const jokes = [
         "Why don’t skeletons fight each other? Because they don’t have the guts!",
         "What do you call fake spaghetti? An impasta!",
@@ -247,7 +275,6 @@
         "What do you call an alligator in a vest? An investi-gator!"
       ];
 
-      // Preloaded facts
       const facts = [
         "The shortest war in history lasted 38 minutes.",
         "Honey never spoils; archaeologists found edible honey in ancient Egyptian tombs!",
@@ -256,36 +283,25 @@
         "A group of flamingos is called a 'flamboyance'."
       ];
 
-      // State to track conversation
-      let userName = localStorage.getItem('userName');
-      let isFirstMessage = !userName;
-      let isSettingUp = false;
-      let expectingFollowUp = false; // Track if awaiting a response to "How about you?"
-      let isWakeWordDetected = false; // Track if wake word is detected
-      let isMicListening = false; // Track mic listening state
-
       function showBubble(text) {
+        console.log('showBubble:', text);
         if (!bubble) {
-          console.error('speechBubble element not found');
+          console.error('speechBubble not found');
           return;
         }
         bubble.textContent = text;
         bubble.classList.add('active');
-        setTimeout(() => bubble.classList.remove('active'), 5000); // 5 seconds
-        console.log('Displayed:', text); // Debugging
+        setTimeout(() => {
+          bubble.classList.remove('active');
+        }, 5000);
       }
 
-      // Current time and date function with season and day type
       function getIndiaTime() {
-        // Get the current time in UTC
+        console.log('getIndiaTime called');
         const now = new Date();
-        
-        // Calculate IST offset (UTC+05:30)
-        const istOffset = 5.5 * 60; // 5 hours 30 minutes in minutes
-        const utcOffset = now.getTimezoneOffset(); // User's local timezone offset in minutes
+        const istOffset = 5.5 * 60;
+        const utcOffset = now.getTimezoneOffset();
         const istTime = new Date(now.getTime() + (istOffset + utcOffset) * 60 * 1000);
-
-        // Format the date and time for IST
         const options = {
           timeZone: 'Asia/Kolkata',
           weekday: 'long',
@@ -297,241 +313,208 @@
           hour12: true
         };
         const dateString = istTime.toLocaleString('en-US', options);
-
-        // Determine day type (weekday or weekend)
-        const dayOfWeek = istTime.getDay(); // 0 = Sunday, 1 = Monday, etc.
+        const dayOfWeek = istTime.getDay();
         const dayType = (dayOfWeek === 0 || dayOfWeek === 6) ? 'a weekend' : 'a weekday';
-
-        // Determine season based on month (simplified for India)
-        const month = istTime.getMonth(); // 0 = January, 1 = February, etc.
+        const month = istTime.getMonth();
         const season = (month >= 2 && month <= 4) ? 'spring' : (month >= 5 && month <= 7) ? 'summer' : (month >= 8 && month <= 10) ? 'autumn' : 'winter';
-
         return `${dateString}, ${dayType} in the ${season} season.`;
       }
 
       function getRandomJoke() {
-        const randomIndex = Math.floor(Math.random() * jokes.length);
-        return jokes[randomIndex];
+        console.log('getRandomJoke called');
+        return jokes[Math.floor(Math.random() * jokes.length)];
       }
 
       function getRandomFact() {
-        const randomIndex = Math.floor(Math.random() * facts.length);
-        return facts[randomIndex];
+        console.log('getRandomFact called');
+        return facts[Math.floor(Math.random() * facts.length)];
       }
 
       function handleCommand(input) {
+        console.log('handleCommand:', input);
         const lowerInput = input.toLowerCase().trim();
-        console.log('Processing command:', lowerInput); // Debugging
 
-        // Handle first message setup
         if (isFirstMessage) {
           isFirstMessage = false;
           isSettingUp = true;
           return "Please enter your name:";
         }
 
-        // Handle setup mode
         if (isSettingUp) {
-          if (input) {
-            userName = input;
+          if (lowerInput) {
+            userName = lowerInput;
             localStorage.setItem('userName', userName);
             isSettingUp = false;
             return `Name set to ${userName}! Welcome to FusionBot! Say "hey TPG", "TPG", or "FusionHub" to start, or type 'help' for commands.`;
-          } else {
-            return "Please enter a valid name:";
           }
+          return "Please enter a valid name:";
         }
 
-        // Handle follow-up to "How are you?"
-        if (expectingFollowUp) {
-          expectingFollowUp = false;
-          const positiveReplies = ["good", "great", "fine", "awesome", "happy", "excellent"];
-          const negativeReplies = ["bad", "not good", "sad", "terrible", "upset", "poor"];
-          if (positiveReplies.some(word => lowerInput.includes(word))) {
-            return `Glad to hear that, ${userName}! I'm doing great too! Want to hear a fact?`;
-          } else if (negativeReplies.some(word => lowerInput.includes(word))) {
-            return `Sorry to hear that, ${userName}! Hope you feel better soon! Would you like a joke to cheer you up?`;
-          } else {
-            return `Thanks for sharing, ${userName}! I'm doing great! How can I assist you today?`;
-          }
+        if (lowerInput.includes("time")) {
+          return `Here’s the details: ${getIndiaTime()}`;
         }
 
-        // Handle time-related queries
-        const timeKeywords = ["time", "tell me time", "what's the time", "time please", "current time", "what time is it"];
-        if (timeKeywords.some(keyword => lowerInput.includes(keyword))) {
-          const currentTime = getIndiaTime();
-          return `Here’s the details: ${currentTime}`;
-        }
-
-        // Handle weather query (static knowledge for April 30, 2025, in India)
         if (lowerInput.includes("weather")) {
-          return `For April 30, 2025, in India, expect warm spring weather, around 30-35°C in most regions, with possible evening showers in the north. Stay hydrated!`;
+          return `For May 5, 2025, in India, expect warm spring weather, around 30-35°C in most regions, with possible evening showers in the north. Stay hydrated!`;
         }
 
-        // Handle fact query
         if (lowerInput.includes("fact")) {
           return getRandomFact();
         }
 
-        // Handle greetings
         if (lowerInput === "hello" || lowerInput === "hi" || lowerInput === "hey") {
-          // Get the current time in IST
           const now = new Date();
-          const istOffset = 5.5 * 60; // 5 hours 30 minutes in minutes
+          const istOffset = 5.5 * 60;
           const utcOffset = now.getTimezoneOffset();
           const istTime = new Date(now.getTime() + (istOffset + utcOffset) * 60 * 1000);
-          
-          // Determine the hour in IST
           const hour = istTime.getHours();
           const greeting = hour >= 5 && hour < 12 ? "Good morning" : hour >= 12 && hour < 17 ? "Good afternoon" : "Good evening";
-          
           return `${greeting}, ${userName}! Nice to see you! How can I help today?`;
-        } else if (lowerInput === "how are you") {
-          expectingFollowUp = true; // Set flag to expect a follow-up
-          return `I'm doing great, ${userName}! How about you?`;
-        } else if (lowerInput === "joke") {
+        }
+
+        if (lowerInput === "joke") {
           return getRandomJoke();
-        } else if (lowerInput === "help") {
-          return "Available commands: hello/hi/hey, how are you, time/tell me time/what's the time/time please/what time is it, weather, fact, joke, help, open [chatgpt/music/game server 1/game server 2/anime]";
-        } else if (lowerInput.startsWith("open ")) {
-          const link = lowerInput.replace("open ", "").toLowerCase();
+        }
+
+        if (lowerInput === "help") {
+          return "Available commands: hello/hi/hey, time, weather, fact, joke, help, open [chatgpt/music/game server 1/game server 2/anime/watch together]";
+        }
+
+        if (lowerInput.startsWith("open ")) {
+          const link = lowerInput.replace("open ", "");
           const urls = {
             "chatgpt": "https://chat.openai.com/",
             "music": "https://soundcloud.com/",
             "game server 1": "https://crazygames.com/",
             "game server 2": "https://poki.com/",
-            "anime": "https://aniplaynow.live/"
+            "anime": "https://aniplaynow.live/",
+            "watch together": "https://app.kosmi.io/"
           };
           if (urls[link]) {
             window.open(urls[link], '_blank');
             return `Opening ${link}...`;
-          } else {
-            return "Invalid link. Try: chatgpt, music, game server 1, game server 2, anime.";
           }
-        } else {
-          return `You said: ${input}. I can respond to: hello/hi/hey, how are you, time/tell me time/what's the time/time please/what time is it, weather, fact, joke, help, or open [link].`;
+          return "Invalid link. Try: chatgpt, music, game server 1, game server 2, anime, watch together.";
         }
+
+        return `You said: ${input}. Try: hello, time, weather, fact, joke, help, or open [link].`;
       }
 
-      async function sendMessage() {
+      function sendMessage() {
+        console.log('sendMessage called');
         const message = chatInput.value.trim();
         if (!message) {
           showBubble("Please type a message.");
           return;
         }
-        
         chatInput.value = '';
         showBubble('Thinking...');
-
         const response = handleCommand(message);
         showBubble(response);
       }
 
-      // Voice recognition setup
+      // Event listeners
+      sendBtn.addEventListener('click', () => {
+        console.log('Send button clicked');
+        sendMessage();
+      });
+
+      chatInput.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+          console.log('Enter key pressed');
+          sendMessage();
+        }
+      });
+
+      // Speech recognition
       const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
       let recognition;
       if (SpeechRecognition) {
+        console.log('SpeechRecognition supported');
         recognition = new SpeechRecognition();
         recognition.lang = 'en-US';
         recognition.interimResults = false;
         recognition.maxAlternatives = 1;
-        recognition.continuous = true; // Enable continuous listening
-
-        let lastResult = ''; // Store the last recognized phrase
 
         recognition.onresult = (event) => {
-          if (!isMicListening) return; // Ignore if mic is off
+          console.log('Speech recognition result');
+          if (!isMicListening) return;
+          const result = event.results[event.results.length - 1][0].transcript.trim().toLowerCase();
+          console.log('Recognized:', result);
 
-          const currentResult = event.results[event.results.length - 1][0].transcript.trim().toLowerCase();
-          lastResult = currentResult;
-          console.log('Recognized:', currentResult); // Debugging
-
-          if (!isWakeWordDetected) {
-            showBubble('Listening for "hey TPG", "TPG", or "FusionHub"...');
-          }
-
-          // Check for wake words
           const wakeWords = ["hey tpg", "tpg", "fusionhub"];
-          if (wakeWords.some(word => lastResult.includes(word))) {
+          if (wakeWords.some(word => result.includes(word))) {
             isWakeWordDetected = true;
-            showBubble('Wake word detected! Waiting for your command...');
-            return; // Wait for the next command after wake word
+            showBubble('Wake word detected! Say your command...');
+            return;
           }
 
-          // Process command only if wake word was detected previously
-          if (isWakeWordDetected && lastResult && !wakeWords.some(word => lastResult.includes(word))) {
-            chatInput.value = lastResult;
+          if (isWakeWordDetected) {
+            chatInput.value = result;
             showBubble('Thinking...');
-            const response = handleCommand(lastResult);
+            const response = handleCommand(result);
             showBubble(response);
-            isWakeWordDetected = false; // Reset after processing command
+            isWakeWordDetected = false;
           }
         };
 
         recognition.onerror = (event) => {
-          showBubble('Error: Could not recognize speech. Please check your microphone or try typing.');
-          console.error('Speech recognition error:', event.error); // Debugging
-          if (isMicListening) {
-            try {
-              recognition.start();
-            } catch (e) {
-              console.error('Restart error:', e);
-            }
+          console.error('Speech recognition error:', event.error);
+          if (event.error === 'no-speech') {
+            showBubble('No speech detected. Speak clearly.');
+          } else if (event.error === 'not-allowed') {
+            showBubble('Mic access denied. Please allow microphone permissions.');
+          } else {
+            showBubble('Speech error. Try typing instead.');
           }
         };
 
         recognition.onend = () => {
-          console.log('Recognition ended, restarting if mic is on...');
+          console.log('Speech recognition ended');
           if (isMicListening) {
-            try {
-              recognition.start();
-            } catch (e) {
-              console.error('Restart error:', e);
-            }
+            console.log('Restarting recognition...');
+            recognition.start();
           }
         };
 
-        // Toggle mic listening
         micToggleBtn.addEventListener('click', () => {
+          console.log('Mic toggle clicked');
           if (isMicListening) {
             isMicListening = false;
-            isWakeWordDetected = false; // Reset wake word state
+            isWakeWordDetected = false;
             recognition.stop();
             micToggleBtn.textContent = 'On';
             micToggleBtn.classList.remove('listening');
             showBubble('Mic turned off.');
           } else {
             isMicListening = true;
-            isWakeWordDetected = false; // Reset wake word state
             try {
               recognition.start();
               micToggleBtn.textContent = 'Off';
               micToggleBtn.classList.add('listening');
               showBubble('Listening for "hey TPG", "TPG", or "FusionHub"...');
             } catch (e) {
-              showBubble('Error: Failed to start mic. Check permissions.');
-              console.error('Start error:', e);
+              console.error('Mic start error:', e);
+              showBubble('Failed to start mic. Check permissions.');
             }
           }
         });
       } else {
+        console.warn('SpeechRecognition not supported');
         micToggleBtn.disabled = true;
         micToggleBtn.textContent = '🎙️ (Not supported)';
-        console.warn('Speech recognition not supported in this browser.');
-        showBubble('Speech recognition not supported in this browser. Please type your message.');
+        showBubble('Speech not supported. Use text input.');
       }
 
-      // Event Listeners for Send button and Enter key
-      sendBtn.addEventListener('click', sendMessage);
-      chatInput.addEventListener('keypress', e => {
-        if (e.key === 'Enter') sendMessage();
-      });
-
-      // Initial welcome if name is already set
+      // Initial welcome
       if (userName) {
+        console.log('Showing welcome message');
         setTimeout(() => showBubble(`Welcome back, ${userName}! Say "hey TPG", "TPG", or "FusionHub" to start, or type 'help' for commands.`), 1000);
+      } else {
+        console.log('No userName, prompting for name');
+        setTimeout(() => showBubble('Say "hey TPG" or type your name to start!'), 1000);
       }
     });
   </script>
 </body>
-  </html>
+</html>
